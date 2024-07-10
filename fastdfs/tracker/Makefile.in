@@ -1,0 +1,36 @@
+.SUFFIXES: .c .o
+
+COMPILE = $(CC) $(CFLAGS)
+INC_PATH = -I../common -I/usr/local/include
+LIB_PATH = $(LIBS) -lfastcommon -lserverframe
+TARGET_PATH = $(TARGET_PREFIX)/bin
+CONFIG_PATH = $(TARGET_CONF_PATH)
+
+SHARED_OBJS = ../common/fdfs_global.o \
+              tracker_proto.o tracker_mem.o tracker_service.o tracker_status.o \
+              tracker_global.o tracker_func.o fdfs_server_id_func.o \
+              fdfs_shared_func.o tracker_relationship.o \
+              $(TRACKER_EXTRA_OBJS)
+
+ALL_OBJS = $(SHARED_OBJS)
+
+ALL_PRGS = fdfs_trackerd
+
+all: $(ALL_OBJS) $(ALL_PRGS)
+
+$(ALL_PRGS): $(ALL_OBJS)
+
+.o:
+	$(COMPILE) -o $@ $<  $(SHARED_OBJS) $(LIB_PATH) $(INC_PATH)
+.c:
+	$(COMPILE) -o $@ $<  $(ALL_OBJS) $(LIB_PATH) $(INC_PATH)
+.c.o:
+	$(COMPILE) -c -o $@ $<  $(INC_PATH)
+install:
+	mkdir -p $(TARGET_PATH)
+	mkdir -p $(CONFIG_PATH)
+	cp -f $(ALL_PRGS) $(TARGET_PATH)
+	if [ ! -f $(CONFIG_PATH)/tracker.conf ]; then cp -f ../conf/tracker.conf $(CONFIG_PATH)/tracker.conf; fi
+	if [ ! -f $(CONFIG_PATH)/storage_ids.conf ]; then cp -f ../conf/storage_ids.conf $(CONFIG_PATH)/storage_ids.conf; fi
+clean:
+	rm -f $(ALL_OBJS) $(ALL_PRGS)
