@@ -2,18 +2,16 @@ cmake_minimum_required(VERSION 3.12)
 #cmake_policy(SET CMP0079 NEW)
 
 project(fastdfs-all)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin) # 指定可执行文件输出目录
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_C_FLAGS "-Wall -D_FILE_OFFSET_BITS=64 -D_GNU_SOURCE -g -O1 -DDEBUG_FLAG -fPIC -DOS_LINUX")
 
 add_subdirectory(fastcommon/src)
 add_subdirectory(serverframe/src)
 source_group("fastcommon" ${fastcommon_c} ${fastcommon_h})
 source_group("serverframe" ${serverframe_c} ${serverframe_h})
+
 add_subdirectory(fastdfs)
 
-message("----------------------------")
-message("${fastcommon_h} ${serverframe_h} ${fastcommon_c} ${serverframe_c} ${common_c} ${client_c} ${tracker_c} ${storage_c}")
-message("----------------------------")
 include_directories(
         fastdfs/common
         fastdfs/tracker
