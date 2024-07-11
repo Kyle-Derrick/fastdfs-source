@@ -124,6 +124,7 @@ sed_replace()
     fi
 }
 
+mkdir -p src/include
 cd src/include
 link=$(readlink sf)
 if [ $? -ne 0 ] || [ "$link" != '..' -a "$link" != '../' ]; then
