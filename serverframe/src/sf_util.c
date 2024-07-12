@@ -93,7 +93,7 @@ int sf_printbuffer(char* buffer,int32_t len)
 }
 
 void sf_usage_ex(const char *program, const SFCMDOption *other_options)
-{
+{   // 打印帮助信息
     fprintf(stderr, "\nUsage: %s [options] <config_file> "
             "[start | stop | restart | status]\n\noptions:\n", program);
 
@@ -112,29 +112,29 @@ void sf_usage_ex(const char *program, const SFCMDOption *other_options)
 }
 
 static int match_option(const char *str, const SFCMDOption *option)
-{
+{   // 匹配参数 option
     const char *start;
     const char *end;
 
-    if (str[1] == '-') {
+    if (str[1] == '-') {    // 如果是 --xxx
         start = str + 2;
         while (option->name.str != NULL) {
             if (strncmp(option->name.str, start,
                         option->name.len) == 0)
-            {
+            {   // 判断是否是对应参数
                 end = start + option->name.len;
-                if (*end == '\0') {
+                if (*end == '\0') { // 如果是结尾，根据指定的是否含有arg判断返回2或则1
                     return option->has_arg ? 2 : 1;
-                } else if (*end == '=') {
+                } else if (*end == '=') {   // 如果是等于号结尾，返回1
                     return 1;
-                }
+                }   // 如果还未结尾则继续
             }
 
             option++;
         }
-    } else {
+    } else {    // 如果是 -x
         while (option->name.str != NULL) {
-            if (option->val == str[1]) {
+            if (option->val == str[1]) {    // -x 通过val字段进行比对
                 if (str[2] == '\0') {
                     return option->has_arg ? 2 : 1;
                 } else {
@@ -176,7 +176,7 @@ const char *sf_parse_daemon_mode_and_action_ex(int argc, char *argv[],
             continue;
         }
 
-        if (other_options != NULL) {
+        if (other_options != NULL) {    // 解析 --xxx和-x参数，但由于fdfs项目没有多余参数，故无用
             inc = match_option(argv[i], other_options);
             if (inc > 0) {
                 i += inc;
@@ -215,7 +215,7 @@ const char *sf_parse_daemon_mode_and_action_ex(int argc, char *argv[],
         {
             *daemon_mode = false;
             i++;
-        } else {
+        } else {    // 无法解析的非法参数
             fprintf(stderr, "\nError: unrecognized option: %s\n", argv[i]);
             sf_usage_ex(argv[0], other_options);
             return NULL;

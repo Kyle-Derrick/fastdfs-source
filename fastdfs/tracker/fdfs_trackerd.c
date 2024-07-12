@@ -164,9 +164,9 @@ int main(int argc, char *argv[])
 	}
 
     conf_filename = sf_parse_daemon_mode_and_action(argc, argv,
-            &g_fdfs_version, &daemon_mode, &action);
+            &g_fdfs_version, &daemon_mode, &action);    // 从argv中解析出配置文件路径、是否后台运行（默认是）和命令参数（start/restart/stop）
     if (conf_filename == NULL)
-    {
+    {   // -v -h 未获取到时直接返回
         return 0;
     }
 
