@@ -171,7 +171,7 @@ int main(int argc, char *argv[])
     }
 
 	g_current_time = time(NULL);
-	log_init2();
+	log_init2();    // 初始化日志（主要是初始化日志用到的互斥锁）
 
 	if ((result=sf_get_base_path_from_conf_file(conf_filename)) != 0)
 	{

@@ -546,7 +546,7 @@ static int iniInitContext(IniContext *pContext, const char annotation_type,
 
 	memset(pContext, 0, sizeof(IniContext));
 	pContext->current_section = &pContext->global;
-	if ((result=fc_hash_init(&pContext->sections, Time33Hash, 32, 0.75)) != 0)
+	if ((result=fc_hash_init(&pContext->sections, Time33Hash, 32, 0.75)) != 0)  // 初始化hash content，包含hash方法，hash方法所需空间等
 	{
 		logError("file: "__FILE__", line: %d, " \
 			"fc_hash_init fail, errno: %d, error info: %s", \
@@ -662,11 +662,11 @@ int iniLoadFromFileEx(const char *szFilename, IniContext *pContext,
         }
 
 		if (*szFilename == '/')
-		{
+		{   // 绝对路径
 			pLast = strrchr(szFilename, '/');
-			len = pLast - szFilename;
+			len = pLast - szFilename;   // 配置文件所在目录字符串长度
 			if (len >= sizeof(pContext->config_path))
-			{
+			{   // 路径太长，超过256
 				logError("file: "__FILE__", line: %d, "\
 					"the path of the config file: %s is " \
 					"too long!", __LINE__, szFilename);
@@ -679,11 +679,11 @@ int iniLoadFromFileEx(const char *szFilename, IniContext *pContext,
 				"%s", szFilename);
 		}
 		else
-		{
+		{   // 相对路径
 			memset(pContext->config_path, 0, \
 				sizeof(pContext->config_path));
 			if (getcwd(pContext->config_path, sizeof( \
-				pContext->config_path)) == NULL)
+				pContext->config_path)) == NULL)    // 获取目录
 			{
 				logError("file: "__FILE__", line: %d, " \
 					"getcwd fail, errno: %d, " \
@@ -757,7 +757,7 @@ static int iniDoLoadFromFile(const char *szFilename, \
 	char error_info[512];
 
 	if (IS_URL_RESOURCE(szFilename))
-	{
+	{   // 如果是url资源
 		if ((result=get_url_content(szFilename, 10, 60, &http_status, \
 				&content, &content_len, error_info)) != 0)
 		{
@@ -778,7 +778,7 @@ static int iniDoLoadFromFile(const char *szFilename, \
 		}
 	}
 	else
-	{
+	{   // 读取文件内容
 		if ((result=getFileContent(szFilename, &content, \
 				&file_size)) != 0)
 		{
@@ -962,7 +962,7 @@ static int iniAddAnnotation(char *params)
 }
 
 static int iniDoLoadItemsFromBuffer(char *content, IniContext *pContext)
-{
+{   // todo 进度缓存
 	IniSection *pSection;
 	IniItem *pItem;
 	char *pLine;
@@ -2037,7 +2037,7 @@ static char *iniFindTag(char *content, char *pStart,
             return NULL;
         }
         if (isLeadingSpacesLine(content, p))
-        {
+        {// 判断是不是#@if开头
             return p;
         }
         pStart = p + tagLen;
@@ -2089,7 +2089,7 @@ static int iniDoProccessSet(char *pSet, char **ppSetEnd,
 
     memcpy(buff, pStart, len);
     *(buff + len) = '\0';
-    if (splitEx(buff, '=', parts, 2) != 2) {
+    if (splitEx(buff, '=', parts, 2) != 2) {    // 按等于拆分开
         logWarning("file: "__FILE__", line: %d, "
                 "invalid set format: %s%s",
                 __LINE__, _PREPROCESS_TAG_STR_SET, buff);
@@ -2100,11 +2100,11 @@ static int iniDoProccessSet(char *pSet, char **ppSetEnd,
         return ENOMEM;
     }
 
-    key = fc_trim(parts[0]);
-    value = fc_trim(parts[1]);
+    key = fc_trim(parts[0]);    // 等于号左侧参数名
+    value = fc_trim(parts[1]);  // 等于号右侧，参数值
     value_len = strlen(value);
     is_exec = (value_len > 3 && (*value == '$' && *(value + 1) == '(')
-            &&  *(value + value_len - 1) == ')');
+            &&  *(value + value_len - 1) == ')');   // 判断是不是需要exec
 
     pStart = strstr(value, "%{");
     if (pStart != NULL && strchr(pStart + 2, '}') != NULL) {
@@ -2685,7 +2685,7 @@ static int iniLoadItemsFromBuffer(char *content, IniContext *pContext)
         offset = 0;
         pContent = new_content;
         content_len = new_content_len;
-        if ((new_content=iniProccessIf(pContent, content_len,
+        if ((new_content=iniProccessIf(pContent, content_len,   // （不确定）解析并处理#@if
                         &offset, pContext, &new_content_len)) == NULL)
         {
             return ENOMEM;
@@ -2697,7 +2697,7 @@ static int iniLoadItemsFromBuffer(char *content, IniContext *pContext)
         offset = 0;
         pContent = new_content;
         content_len = new_content_len;
-        if ((new_content=iniProccessFor(pContent, content_len,
+        if ((new_content=iniProccessFor(pContent, content_len,  // （不确定）解析并处理#@for
                         &offset, pContext, &new_content_len)) == NULL)
         {
             return ENOMEM;

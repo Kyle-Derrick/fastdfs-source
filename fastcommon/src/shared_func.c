@@ -1232,10 +1232,10 @@ int fc_remove_redundant_slashes(const string_t *src,
 
 int getFileContent1(int fd, const char *filename,
         char **buff, int64_t *file_size)
-{
+{   // 读取文件内容
     int result;
 
-	if ((*file_size=lseek(fd, 0, SEEK_END)) < 0) {
+	if ((*file_size=lseek(fd, 0, SEEK_END)) < 0) {  // 获取文件大小
         *buff = NULL;
         *file_size = 0;
         result = errno != 0 ? errno : EIO;
@@ -1270,7 +1270,7 @@ int getFileContent1(int fd, const char *filename,
                     filename, *file_size, result, STRERROR(result));
             break;
         }
-    } while (0);
+    } while (0);    // 注意这个while并不循环
 
     if (result == 0) {
         (*buff)[*file_size] = '\0';
@@ -1329,7 +1329,7 @@ int getFileContent(const char *filename, char **buff, int64_t *file_size)
         return result;
 	}
 
-    result = getFileContent1(fd, filename, buff, file_size);
+    result = getFileContent1(fd, filename, buff, file_size);    // 读取配置文件内容
 	close(fd);
 
 	return result;

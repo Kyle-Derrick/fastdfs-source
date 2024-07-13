@@ -108,7 +108,7 @@ int fc_hash_init_ex(HashArray *pHash, HashFunc hash_func, \
 		return EINVAL;
 	}
 
-	if ((result=_hash_alloc_buckets(pHash, 0)) != 0)
+	if ((result=_hash_alloc_buckets(pHash, 0)) != 0)    // 分配hash需要的空间
 	{
 		return result;
 	}
@@ -122,7 +122,7 @@ int fc_hash_init_ex(HashArray *pHash, HashFunc hash_func, \
 		pHash->load_factor = load_factor;
 	}
 	else
-	{
+	{   // 装载因子不在0和1之间则直接默认0.5
 		pHash->load_factor = 0.50;
 	}
 
