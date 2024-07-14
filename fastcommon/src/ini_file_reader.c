@@ -735,7 +735,7 @@ int iniLoadFromFileEx(const char *szFilename, IniContext *pContext,
     }
 
 	if (result == 0)
-	{
+	{   // hash排序
 		iniSortItems(pContext);
 	}
 	else
@@ -962,7 +962,7 @@ static int iniAddAnnotation(char *params)
 }
 
 static int iniDoLoadItemsFromBuffer(char *content, IniContext *pContext)
-{   // todo 进度缓存
+{   // 参考 ini_file_reader-Chinese.md
 	IniSection *pSection;
 	IniItem *pItem;
 	char *pLine;
@@ -1100,7 +1100,7 @@ static int iniDoLoadItemsFromBuffer(char *content, IniContext *pContext)
             }
             else if (strncasecmp(pLine+1, "@add_annotation", 15) == 0 &&
                     (*(pLine+16) == ' ' || *(pLine+16) == '\t'))
-            {
+            {   // 初始化添加annotation，注册到 g_annotations
                 result = iniAddAnnotation(pLine + 17);
                 if (!(result == 0 || result == EEXIST))
                 {

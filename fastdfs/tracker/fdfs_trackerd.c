@@ -174,15 +174,15 @@ int main(int argc, char *argv[])
 	log_init2();    // 初始化日志（主要是初始化日志用到的互斥锁）
 
 	if ((result=sf_get_base_path_from_conf_file(conf_filename)) != 0)
-	{
+	{   // 读取并解析配置文件，然后创建配置文件指定的目录，当父目录不存在时会报错
 		log_destroy();
 		return result;
 	}
 
-	snprintf(pidFilename, sizeof(pidFilename),
+	snprintf(pidFilename, sizeof(pidFilename),  // pid路径
 		"%s/data/fdfs_trackerd.pid", SF_G_BASE_PATH_STR);
 	if ((result=process_action(pidFilename, action, &stop)) != 0)
-	{
+	{   // process_action方法会根据action执行不同操作，stop和restart会杀死已存在的进程（通过kill 15），start会检测是否已有进程存活
 		if (result == EINVAL)
 		{
 			sf_usage(argv[0]);

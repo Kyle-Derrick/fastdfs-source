@@ -237,7 +237,7 @@ int sf_get_base_path_from_conf_file(const char *config_filename)
             SF_G_BASE_PATH_STR, sizeof(SF_G_BASE_PATH_STR), LOG_NOTHING);
     if (result != 0) {
         if (result == ENOENT) {
-            if ((result=fc_check_mkdir_ex(SF_G_BASE_PATH_STR,
+            if ((result=fc_check_mkdir_ex(SF_G_BASE_PATH_STR,   // 检查配置文件指定的目录是否存在
                             0775, &SF_G_BASE_PATH_CREATED)) != 0)
             {
                 return result;

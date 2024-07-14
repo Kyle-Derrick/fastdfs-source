@@ -207,7 +207,7 @@ int process_start(const char* pidFilename)
         }
     }
 
-    if (kill(pid, 0) == 0) {
+    if (kill(pid, 0) == 0) {    // ping进程确认是否存活
         if (access("/proc", F_OK) == 0) {
             char cmdline[MAX_PATH_SIZE];
             char argv0[MAX_PATH_SIZE];
