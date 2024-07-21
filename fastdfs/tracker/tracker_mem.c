@@ -2320,17 +2320,17 @@ int tracker_mem_init()
 	int result;
 
 	if ((result=init_pthread_lock(&mem_thread_lock)) != 0)
-	{
+	{   // 初始化线程锁
 		return result;
 	}
 
 	if ((result=init_pthread_lock(&mem_file_lock)) != 0)
-	{
+	{   // 初始化文件锁
 		return result;
 	}
 
 	if ((result=tracker_open_changlog_file()) != 0)
-	{
+	{   // 打开data/storage_changelog.dat文件，如果没有则创建
 		return result;
 	}
 

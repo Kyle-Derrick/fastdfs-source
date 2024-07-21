@@ -185,9 +185,9 @@ int tracker_load_from_conf_file(const char *filename)
 			result = ECANCELED;
 			break;
 		}
-
+        // 赋值 g_sf_global_vars.up_time 和 g_current_time 为当前时间
         sf_set_current_time();
-
+        // 设置端口，线程等参数
         SF_SET_CONTEXT_INI_CONFIG_EX(config, fc_comm_type_sock, filename,
                 &iniContext, NULL, FDFS_TRACKER_SERVER_DEF_PORT,
                 FDFS_TRACKER_SERVER_DEF_PORT, DEFAULT_WORK_THREADS,
@@ -199,7 +199,7 @@ int tracker_load_from_conf_file(const char *filename)
         }
 
 		if ((result=tracker_load_store_lookup(filename, &iniContext)) != 0)
-		{
+		{   // store_lookup参数配置
 			break;
 		}
 
@@ -251,7 +251,7 @@ int tracker_load_from_conf_file(const char *filename)
 
 		if ((result=fdfs_parse_storage_reserved_space(&iniContext, \
 				&g_storage_reserved_space)) != 0)
-		{
+		{   // 保留空间配置解析 比如 20%
 			break;
 		}
 
@@ -503,9 +503,9 @@ int tracker_load_from_conf_file(const char *filename)
         }
 
         sf_global_config_to_string(sz_global_config,
-                sizeof(sz_global_config));
+                sizeof(sz_global_config));  // 所有global参数写到sz_global_config中，后续打印info日志
         sf_context_config_to_string(&g_sf_context,
-            sz_service_config, sizeof(sz_service_config));
+            sz_service_config, sizeof(sz_service_config));  // 所有context参数写到sz_service_config中，后续打印info日志
 
 		logInfo("FastDFS v%d.%d.%d, %s, %s, "
 			"store_lookup=%d, store_group=%s, "
@@ -606,7 +606,7 @@ int tracker_load_from_conf_file(const char *filename)
 
 	} while (0);
 
-	iniFreeContext(&iniContext);
+	iniFreeContext(&iniContext);    // 释放iniContext分配的内存
 
 	load_local_host_ip_addrs();
 

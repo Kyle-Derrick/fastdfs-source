@@ -63,10 +63,10 @@ static int load_network_parameters(IniFullContext *ini_ctx,
     char *pMinBuffSize;
     char *pMaxBuffSize;
 
-    g_sf_global_vars.connect_timeout = iniGetIntValueEx(ini_ctx->
-            section_name, "connect_timeout", ini_ctx->context,
-            SF_DEFAULT_CONNECT_TIMEOUT, true);
     if (g_sf_global_vars.connect_timeout <= 0) {
+        g_sf_global_vars.connect_timeout = iniGetIntValueEx(ini_ctx->
+                                                                    section_name, "connect_timeout", ini_ctx->context,
+                                                            SF_DEFAULT_CONNECT_TIMEOUT, true);
         g_sf_global_vars.connect_timeout = SF_DEFAULT_CONNECT_TIMEOUT;
     }
 
@@ -256,7 +256,7 @@ int sf_load_global_base_path(IniFullContext *ini_ctx)
     int result;
     char *pBasePath;
 
-    if (!SF_G_BASE_PATH_INITED) {
+    if (!SF_G_BASE_PATH_INITED) {   // 此处正常情况会在main方法中调用sf_get_base_path_from_conf_file初始化，所以不会进入if内
         pBasePath = iniGetStrValue(NULL, "base_path", ini_ctx->context);
         if (pBasePath == NULL || *pBasePath == '\0') {
             logError("file: "__FILE__", line: %d, "
@@ -268,7 +268,7 @@ int sf_load_global_base_path(IniFullContext *ini_ctx)
     }
 
     chopPath(SF_G_BASE_PATH_STR);
-    if (!fileExists(SF_G_BASE_PATH_STR)) {
+    if (!fileExists(SF_G_BASE_PATH_STR)) {  // tracker根目录不存在则创建
         if ((result=fc_check_mkdir_ex(SF_G_BASE_PATH_STR, 0775,
                         &SF_G_BASE_PATH_CREATED)) != 0)
         {
@@ -301,9 +301,9 @@ int sf_load_global_config_ex(const char *log_filename_prefix,
 
     g_sf_global_vars.task_buffer_extra_size = task_buffer_extra_size;
     g_sf_global_vars.tcp_quick_ack = iniGetBoolValue(NULL,
-            "tcp_quick_ack", ini_ctx->context, true);
+            "tcp_quick_ack", ini_ctx->context, true);   // tcp连接设置quick ack
     tcp_set_quick_ack(g_sf_global_vars.tcp_quick_ack);
-    if (load_network_params) {
+    if (load_network_params) {  // 设置网络相关参数，连接数、超时等
         if ((result=load_network_parameters(ini_ctx, max_pkg_size_item_nm,
                         fixed_buff_size, task_buffer_extra_size)) != 0)
         {
@@ -368,13 +368,13 @@ int sf_load_global_config_ex(const char *log_filename_prefix,
     }
     g_sf_global_vars.run_by.inited = true;
 
-    if (SF_G_BASE_PATH_CREATED) {
+    if (SF_G_BASE_PATH_CREATED) {   // 如果是进程创建的，检测拥有者和当前是否一致
         SF_CHOWN_TO_RUNBY_RETURN_ON_ERROR(SF_G_BASE_PATH_STR);
     }
 
     if (need_set_run_by) {
         if ((result=set_run_by(g_sf_global_vars.run_by.group,
-                        g_sf_global_vars.run_by.user)) != 0)
+                        g_sf_global_vars.run_by.user)) != 0)    //设置用户和组
         {
             return result;
         }
@@ -387,15 +387,15 @@ int sf_load_global_config_ex(const char *log_filename_prefix,
     old_section_name = ini_ctx->section_name;
     ini_ctx->section_name = "error-log";
     if ((result=sf_load_log_config(ini_ctx, &g_log_context,
-                    &g_sf_global_vars.error_log)) != 0)
+                    &g_sf_global_vars.error_log)) != 0) // 从配置context中获取log相关配置值
     {
         return result;
     }
     ini_ctx->section_name = old_section_name;
 
-    load_log_level(ini_ctx->context);
+    load_log_level(ini_ctx->context);   // 日志等级
     if (log_filename_prefix != NULL) {
-        if ((result=log_set_prefix(SF_G_BASE_PATH_STR,
+        if ((result=log_set_prefix(SF_G_BASE_PATH_STR,  //日志前缀取程序文件名
                         log_filename_prefix)) != 0)
         {
             return result;
@@ -412,7 +412,7 @@ int sf_load_config_ex(const char *log_filename_prefix,
     int result;
     if ((result=sf_load_global_config_ex(log_filename_prefix, &config->ini_ctx,
                     true, config->max_pkg_size_item_name, fixed_buff_size,
-                    task_buffer_extra_size, need_set_run_by)) != 0)
+                    task_buffer_extra_size, need_set_run_by)) != 0) // 设置tcp、日志等相关配置
     {
         return result;
     }

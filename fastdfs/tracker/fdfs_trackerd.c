@@ -198,7 +198,7 @@ int main(int argc, char *argv[])
 
 #if defined(DEBUG_FLAG) && defined(OS_LINUX)
 	if (getExeAbsoluteFilename(argv[0], g_exe_name, \
-		sizeof(g_exe_name)) == NULL)
+		sizeof(g_exe_name)) == NULL)    // 获取程序完整路径
 	{
 		logCrit("exit abnormally!\n");
 		log_destroy();
@@ -214,14 +214,14 @@ int main(int argc, char *argv[])
 	}
 
 	if ((result=tracker_load_status_from_file(&g_tracker_last_status)) != 0)
-	{
+	{   // 加载tracker配置
 		logCrit("exit abnormally!\n");
 		log_destroy();
 		return result;
 	}
-
+    // 设置全局base64配置
 	base64_init_ex(&g_fdfs_base64_context, 0, '-', '_', '.');
-	if ((result=set_rand_seed()) != 0)
+	if ((result=set_rand_seed()) != 0)  // 设置随机种子
 	{
 		logCrit("file: "__FILE__", line: %d, " \
 			"set_rand_seed fail, program exit!", __LINE__);
@@ -229,7 +229,7 @@ int main(int argc, char *argv[])
 	}
 
 	if ((result=tracker_mem_init()) != 0)
-	{
+	{ // todo 加载dat相关数据，暂未深入刨析
 		logCrit("exit abnormally!\n");
 		log_destroy();
 		return result;

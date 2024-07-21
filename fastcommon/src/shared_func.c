@@ -196,7 +196,7 @@ char *getExeAbsoluteFilename(const char *exeFilename, char *szAbsFilename, \
 	}
 	
 	p = strrchr(exeFilename, '/');
-	if (p == NULL)
+	if (p == NULL) // 如果直接走的命令，则去如下几个目录扫描
 	{
 		int i;
 		char *search_paths[] = {"/bin", "/usr/bin", "/usr/local/bin"};
@@ -236,7 +236,7 @@ char *getExeAbsoluteFilename(const char *exeFilename, char *szAbsFilename, \
 		filename = p + 1;
 		nPathLen = p - exeFilename;
 		memcpy(szPath, exeFilename, nPathLen);
-		szPath[nPathLen] = '\0';
+		szPath[nPathLen] = '\0';    // szpath是路径，可执行文件所在路径
 	}
 	
 	if (*szPath == '/')
@@ -487,7 +487,7 @@ void daemon_init(bool bCloseFiles)
 		exit(0);
 	}
 	
-	setsid();
+	setsid();   // setsid函数可以创建一个新的会话期，使进程脱离控制终端和进程组，并设置新的控制终端
 	
 	if((pid=fork()) != 0)
 	{
