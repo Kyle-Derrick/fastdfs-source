@@ -7,8 +7,9 @@ TARGET_CONF_PATH=$DESTDIR/etc
 LIB_VERSION=lib64
 DEBUG_FLAG=0
 
-if [ -f /usr/include/fastcommon/_os_define.h ]; then
-  OS_BITS=$(fgrep OS_BITS /usr/include/fastcommon/_os_define.h | awk '{print $NF;}')
+fastcommon_include=$DESTDIR/usr/include/fastcommon
+if [ -f $fastcommon_include/_os_define.h ]; then
+  OS_BITS=$(fgrep OS_BITS $fastcommon_include/_os_define.h | awk '{print $NF;}')
 elif [ -f /usr/local/include/fastcommon/_os_define.h ]; then
   OS_BITS=$(fgrep OS_BITS /usr/local/include/fastcommon/_os_define.h | awk '{print $NF;}')
 else
@@ -133,12 +134,19 @@ fi
 
 cd ..
 cp Makefile.in Makefile
+echo $TARGET_PREFIX
 sed_replace "s#\\\$(CFLAGS)#$CFLAGS#g" Makefile
 sed_replace "s#\\\$(LIBS)#$LIBS#g" Makefile
 sed_replace "s#\\\$(TARGET_PREFIX)#$TARGET_PREFIX#g" Makefile
 sed_replace "s#\\\$(ENABLE_STATIC_LIB)#$ENABLE_STATIC_LIB#g" Makefile
 sed_replace "s#\\\$(ENABLE_SHARED_LIB)#$ENABLE_SHARED_LIB#g" Makefile
 sed_replace "s#\\\$(LIB_VERSION)#$LIB_VERSION#g" Makefile
+DESTDIR_INCLUDE=""
+echo $TARGET_PREFIX
+if [ -n "$DESTDIR" ]; then
+  DESTDIR_INCLUDE="-I$TARGET_PREFIX/include"
+fi
+sed_replace "s#\\\$(DESTDIR_INCLUDE)#$DESTDIR_INCLUDE#g" Makefile
 make $1 $2 $3
 
 if [ "$1" = "clean" ]; then
