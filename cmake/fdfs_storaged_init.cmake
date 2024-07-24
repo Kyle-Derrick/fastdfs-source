@@ -5,7 +5,7 @@ search_makefile(${fdfs_dir}/storage/Makefile.in storage "SHARED_OBJS")
 add_executable(fdfs_storaged
         ${fdfs_dir}/storage/fdfs_storaged.c
         ${storage_sources}
-#        额外添加storage_dump.c
+#        额外添加storage_dump.c，参考fastdfs目录下make.sh中的TRACKER_EXTRA_OBJS变量
         ${fdfs_dir}/storage/storage_dump.c
 )
 target_link_libraries(fdfs_storaged fastcommon serverframe m dl pthread)
