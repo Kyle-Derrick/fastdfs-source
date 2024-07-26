@@ -23,7 +23,7 @@ FDFSStorageIdMapArray g_storage_ids_by_ip = {0, NULL};  //sorted by group name a
 static FDFSStorageIdMapArray g_storage_ids_by_ip_port = {0, NULL};  //sorted by storage ip and port
 
 bool fdfs_is_server_id_valid(const char *id)
-{
+{   // 将id转为10进制整数，然后再转为字符串与id对比是否一致
 	long n;
 	char *endptr;
 	char buff[FDFS_STORAGE_ID_MAX_SIZE];
@@ -97,7 +97,7 @@ static int fdfs_cmp_ip_and_port(const void *p1, const void *p2)
 
 FDFSStorageIdInfo *fdfs_get_storage_id_by_ip(const char *group_name,
 		const char *pIpAddr)
-{
+{   // 从storage缓存(g_storage_ids_by_ip.maps)中根据group和ip获取storage信息
 	FDFSStorageIdMap target;
 	FDFSStorageIdMap *pFound;
 

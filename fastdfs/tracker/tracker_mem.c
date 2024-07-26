@@ -450,9 +450,9 @@ static int tracker_load_groups_old(FDFSGroups *pGroups, const char *data_path)
 		{
 			continue;
 		}
-
+        // 第一列是group名，第二列是port，第三列是store_path_count，第四列是subdir_count_per_path
 		col_count = splitEx(szLine, STORAGE_DATA_FIELD_SEPERATOR, \
-			fields, STORAGE_DATA_GROUP_FIELDS);
+			fields, STORAGE_DATA_GROUP_FIELDS); // 获取列数
 		if (col_count != STORAGE_DATA_GROUP_FIELDS && \
 			col_count != STORAGE_DATA_GROUP_FIELDS - 2)
 		{
@@ -468,7 +468,7 @@ static int tracker_load_groups_old(FDFSGroups *pGroups, const char *data_path)
 		snprintf(group_name, sizeof(group_name),\
 				"%s", fc_trim(fields[0]));
 		if ((result=tracker_mem_add_group_ex(pGroups, &clientInfo, \
-				group_name, false, &bInserted)) != 0)
+				group_name, false, &bInserted)) != 0)   // 添加并初始化group信息，此时只设置了名字，并赋值到clientInfo的group变量中
 		{
 			break;
 		}
@@ -506,9 +506,9 @@ static int tracker_load_groups_old(FDFSGroups *pGroups, const char *data_path)
 
 static int tracker_mem_get_storage_id(const char *group_name, \
 		const char *pIpAddr, char *storage_id)
-{
+{   // 从storage缓存(g_storage_ids_by_ip.maps)中根据group和ip获取storage 的 ID
 	FDFSStorageIdInfo *pStorageIdInfo;
-	pStorageIdInfo = fdfs_get_storage_id_by_ip(group_name, pIpAddr);
+	pStorageIdInfo = fdfs_get_storage_id_by_ip(group_name, pIpAddr);    // 从storage缓存(g_storage_ids_by_ip.maps)中根据group和ip获取storage信息
 	if (pStorageIdInfo == NULL)
 	{
 		return ENOENT;
@@ -520,7 +520,7 @@ static int tracker_mem_get_storage_id(const char *group_name, \
 
 static int tracker_load_groups_new(FDFSGroups *pGroups, const char *data_path, 
 		FDFSStorageSync **ppTrunkServers, int *nTrunkServerCount)
-{
+{   // 加载new dat信息，如果只有old，则加载old信息
 	IniContext iniContext;
 	FDFSGroupInfo *pGroup;
 	char *group_name;
@@ -537,14 +537,14 @@ static int tracker_load_groups_new(FDFSGroups *pGroups, const char *data_path,
 	*ppTrunkServers = NULL;
 	if (!fileExists(STORAGE_GROUPS_LIST_FILENAME_NEW) && \
 	     fileExists(STORAGE_GROUPS_LIST_FILENAME_OLD))
-	{
+	{   // 只有old dat时
 		logDebug("file: "__FILE__", line: %d, " \
 			"convert old data file %s to new data file %s", \
 			__LINE__, STORAGE_GROUPS_LIST_FILENAME_OLD, \
 			STORAGE_GROUPS_LIST_FILENAME_NEW);
 		if ((result=tracker_load_groups_old(pGroups, data_path)) == 0)
-		{
-			if ((result=tracker_save_groups()) == 0)
+		{   // 解析old dat文件，设置group信息
+			if ((result=tracker_save_groups()) == 0)    // 将group信息写入storage_groups_new.dat
 			{
 				unlink(STORAGE_GROUPS_LIST_FILENAME_OLD);
 			}
@@ -554,16 +554,16 @@ static int tracker_load_groups_new(FDFSGroups *pGroups, const char *data_path,
 	}
 
 	if ((result=iniLoadFromFile(STORAGE_GROUPS_LIST_FILENAME_NEW, \
-			&iniContext)) != 0)
+			&iniContext)) != 0) // 读取new dat 文件到iniContext中
 	{
 		return result;
 	}
-
+    // section: Global, itemName: group_count
 	group_count = iniGetIntValue(GROUP_SECTION_NAME_GLOBAL, \
 				GROUP_ITEM_GROUP_COUNT, \
                 		&iniContext, -1);
 	if (group_count < 0)
-	{
+	{   // 当未获取到时
 		iniFreeContext(&iniContext);
 		logError("file: "__FILE__", line: %d, " \
 			"in the file \"%s/%s\", " \
@@ -578,10 +578,10 @@ static int tracker_load_groups_new(FDFSGroups *pGroups, const char *data_path,
 	for (i=1; i<=group_count; i++)
 	{
 		sprintf(section_name, "%s"GROUP_SECTION_NO_FORMAT, \
-			GROUP_SECTION_NAME_PREFIX, i);
+			GROUP_SECTION_NAME_PREFIX, i);  // Group001
 
 		group_name = iniGetStrValue(section_name, \
-				GROUP_ITEM_GROUP_NAME, &iniContext);
+				GROUP_ITEM_GROUP_NAME, &iniContext);    // 获取group名字
 		if (group_name == NULL)
 		{
 			logError("file: "__FILE__", line: %d, " \
@@ -596,7 +596,7 @@ static int tracker_load_groups_new(FDFSGroups *pGroups, const char *data_path,
 
 		memset(&clientInfo, 0, sizeof(TrackerClientInfo));
 		if ((result=tracker_mem_add_group_ex(pGroups, &clientInfo, \
-				group_name, false, &bInserted)) != 0)
+				group_name, false, &bInserted)) != 0)   // 添加group信息，并初始化其空间，但是只设置了groupName
 		{
 			break;
 		}
@@ -612,7 +612,7 @@ static int tracker_load_groups_new(FDFSGroups *pGroups, const char *data_path,
 			result = errno != 0 ? errno : EEXIST;
 			break;
 		}
-
+        // 读取并设置group相关信息，从new dat中读取的信息
 		pGroup = clientInfo.pGroup;
 		pGroup->storage_port = iniGetIntValue(section_name, \
 			GROUP_ITEM_STORAGE_PORT, &iniContext, 0);
@@ -625,18 +625,18 @@ static int tracker_load_groups_new(FDFSGroups *pGroups, const char *data_path,
 		pGroup->current_trunk_file_id = iniGetIntValue(section_name, \
 			GROUP_ITEM_CURRENT_TRUNK_FILE_ID, &iniContext, 0);
 		pValue = iniGetStrValue(section_name, \
-			GROUP_ITEM_LAST_TRUNK_SERVER, &iniContext);
+			GROUP_ITEM_LAST_TRUNK_SERVER, &iniContext); // 是IP
 		if (pValue != NULL)
 		{
 			snprintf(pGroup->last_trunk_server_id, 
 				sizeof(pGroup->last_trunk_server_id), \
 				"%s", pValue);
 			if (g_use_storage_id && (*pValue != '\0' && \
-				!fdfs_is_server_id_valid(pValue)))
+				!fdfs_is_server_id_valid(pValue)))  // 将id转为10进制整数，然后再转为字符串与id对比是否一致
 			{
 				if (tracker_mem_get_storage_id( \
 					pGroup->group_name, pValue, \
-					pGroup->last_trunk_server_id) != 0)
+					pGroup->last_trunk_server_id) != 0) // 从storage缓存(g_storage_ids_by_ip.maps)中根据group和ip获取storage 的 ID
 				{
 					logWarning("file: "__FILE__", line: %d,"\
 						"server id of group name: %s " \
@@ -653,7 +653,7 @@ static int tracker_load_groups_new(FDFSGroups *pGroups, const char *data_path,
 		if (pValue != NULL && *pValue != '\0')
 		{
 		if (nStorageSyncSize <= *nTrunkServerCount)
-		{
+		{   // 已分配空间不够则再分配
 			nStorageSyncSize += 8;
             FDFSStorageSync *new_trunk_servers = (FDFSStorageSync *)
                     realloc(*ppTrunkServers, \
@@ -1611,22 +1611,22 @@ static int tracker_load_data(FDFSGroups *pGroups)
 
 	if ((result=tracker_load_groups_new(pGroups, data_path, \
 		&pTrunkServers, &nTrunkServerCount)) != 0)
-	{
+	{   // 加载group new dat信息，如果只有group old，则加载old版本信息
 		return result;
 	}
 
 	if ((result=tracker_load_storages_new(pGroups, data_path)) != 0)
-	{
+	{   // 加载storage new dat信息，如果只有storage old，则加载old版本信息   todo 暂未细看
 		return result;
 	}
 
 	if ((result=tracker_malloc_all_group_path_mbs(pGroups)) != 0)
-	{
+	{   // 分配mbs相关参数空间并初始化置0, 总磁盘空间、剩余磁盘空间等参数
 		return result;
 	}
 
 	if ((result=tracker_load_sync_timestamps(pGroups, data_path)) != 0)
-	{
+	{   // 加载同步时间戳storage_sync_timestamp.dat，todo 暂未细看
 		return result;
 	}
 
@@ -1648,7 +1648,7 @@ static int tracker_load_data(FDFSGroups *pGroups)
 }
 
 int tracker_save_groups()
-{
+{   // 将group信息写入storage_groups_new.dat
 	char tmpFilename[MAX_PATH_SIZE];
 	char trueFilename[MAX_PATH_SIZE];
 	char buff[FDFS_GROUP_NAME_MAX_LEN + 256];
@@ -2278,7 +2278,7 @@ static int tracker_mem_init_groups(FDFSGroups *pGroups)
 
 	ppGroupEnd = pGroups->groups + pGroups->alloc_size;
 	for (ppGroup=pGroups->groups; ppGroup<ppGroupEnd; ppGroup++)
-	{
+	{   // 分配空间并初始化值
 		*ppGroup = (FDFSGroupInfo *)malloc(sizeof(FDFSGroupInfo));
 		if (*ppGroup == NULL)
 		{
@@ -2330,7 +2330,7 @@ int tracker_mem_init()
 	}
 
 	if ((result=tracker_open_changlog_file()) != 0)
-	{   // 打开data/storage_changelog.dat文件，如果没有则创建
+	{   // 打开data/storage_changelog.dat文件，如果没有则创建，存入全局变量changelog_fd，g_changelog_fsize
 		return result;
 	}
 
@@ -2450,7 +2450,7 @@ static void tracker_mem_free_group(FDFSGroupInfo *pGroup)
 }
 
 static int tracker_mem_init_group(FDFSGroupInfo *pGroup)
-{
+{   // 初始化group信息，分配空间
 	FDFSStorageDetail **ppServer;
 	FDFSStorageDetail **ppServerEnd;
 	int err_no;
@@ -2632,7 +2632,7 @@ static void tracker_mem_free_groups(FDFSGroupInfo **groups, const int count)
 }
 
 static int tracker_mem_realloc_groups(FDFSGroups *pGroups, const bool bNeedSleep)
-{
+{   // 扩展分配空间
 	FDFSGroupInfo **old_groups;
 	FDFSGroupInfo **old_sorted_groups;
 	FDFSGroupInfo **new_groups;
@@ -3025,7 +3025,7 @@ static void tracker_mem_insert_into_sorted_groups(FDFSGroups *pGroups, \
 
 FDFSGroupInfo *tracker_mem_get_group_ex(FDFSGroups *pGroups, \
 		const char *group_name)
-{
+{   // 获取指定group名字的group信息，每获取到返回null
 	FDFSGroupInfo target_groups;
 	FDFSGroupInfo *pTargetGroups;
 	FDFSGroupInfo **ppGroup;
@@ -3051,7 +3051,7 @@ FDFSGroupInfo *tracker_mem_get_group_ex(FDFSGroups *pGroups, \
 static int tracker_mem_add_group_ex(FDFSGroups *pGroups, \
 	TrackerClientInfo *pClientInfo, const char *group_name, \
 	const bool bNeedSleep, bool *bInserted)
-{
+{   // 添加group信息，并初始化其空间，但是只设置了groupName
 	FDFSGroupInfo *pGroup;
 	int result;
 
@@ -3070,12 +3070,12 @@ static int tracker_mem_add_group_ex(FDFSGroups *pGroups, \
 		*bInserted = false;
 		pGroup = tracker_mem_get_group_ex(pGroups, group_name);
 		if (pGroup != NULL)
-		{
+		{   // 已存在就直接返回
 			break;
 		}
 
 		if (pGroups->count >= pGroups->alloc_size)
-		{
+		{   // 如果分配的空间不够了就再分配
 			result = tracker_mem_realloc_groups(pGroups, bNeedSleep);
 			if (result != 0)
 			{
@@ -3084,21 +3084,21 @@ static int tracker_mem_add_group_ex(FDFSGroups *pGroups, \
 		}
 
 		pGroup = *(pGroups->groups + pGroups->count);
-		result = tracker_mem_init_group(pGroup);
+		result = tracker_mem_init_group(pGroup);    // 初始化group信息，分配空间
 		if (result != 0)
 		{
 			break;
 		}
 
-		strcpy(pGroup->group_name, group_name);
-		tracker_mem_insert_into_sorted_groups(pGroups, pGroup);
+		strcpy(pGroup->group_name, group_name); // 只设置了名字
+		tracker_mem_insert_into_sorted_groups(pGroups, pGroup); // 插入group信息，下边就是赋值group信息
 		pGroups->count++;
 
 		if ((pGroups->store_lookup == \
 				FDFS_STORE_LOOKUP_SPEC_GROUP) && \
 				(pGroups->pStoreGroup == NULL) && \
 				(strcmp(pGroups->store_group, \
-					pGroup->group_name) == 0))
+					pGroup->group_name) == 0))  // 如果配置的store lookup是specify group，并且当前group就是指定的group
 		{
 			pGroups->pStoreGroup = pGroup;
 		}
