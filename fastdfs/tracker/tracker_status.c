@@ -32,7 +32,7 @@
 #define TRACKER_STATUS_ITEM_LAST_CHECK_TIME	"last_check_time"
 
 int tracker_write_status_to_file(void *args)
-{
+{   // 写 .tracker_status
 	char full_filename[MAX_PATH_SIZE];
 	char buff[256];
 	int len;

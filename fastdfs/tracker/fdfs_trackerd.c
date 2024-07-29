@@ -135,13 +135,13 @@ static int setup_schedule_tasks()
 
     INIT_SCHEDULE_ENTRY(scheduleEntries[scheduleArray.count],
             sched_generate_next_id(), TIME_NONE, TIME_NONE, TIME_NONE,
-            g_check_active_interval, tracker_mem_check_alive, NULL);
+            g_check_active_interval, tracker_mem_check_alive, NULL);    // 检查空间
     scheduleArray.count++;
 
     INIT_SCHEDULE_ENTRY(scheduleEntries[scheduleArray.count],
             sched_generate_next_id(), 0, 0, 0,
             TRACKER_SYNC_STATUS_FILE_INTERVAL,
-            tracker_write_status_to_file, NULL);
+            tracker_write_status_to_file, NULL);    // 写 .tracker_status
     scheduleArray.count++;
 
     return sched_add_entries(&scheduleArray);
@@ -229,39 +229,39 @@ int main(int argc, char *argv[])
 	}
 
 	if ((result=tracker_mem_init()) != 0)
-	{ // todo 加载dat相关数据，暂未深入刨析
+	{ // 详情看方法内部
 		logCrit("exit abnormally!\n");
 		log_destroy();
 		return result;
 	}
 
     if ((result=sf_socket_server()) != 0)
-    {
+    {   // 调用serverframe创建socket服务
 		log_destroy();
 		return result;
     }
 
     if (daemon_mode)
-    {
+    {   // 如果是守护进程模式则fork （默认就是）
         daemon_init(false);
     }
 	umask(0);
 	
 	if ((result=write_to_pid_file(pidFilename)) != 0)
-	{
+	{   // 写入pid文件
 		log_destroy();
 		return result;
 	}
 
 	if ((result=tracker_service_init()) != 0)
-	{
+	{   // 设置server处理方法和各种回调
 		logCrit("exit abnormally!\n");
 		log_destroy();
 		return result;
 	}
 	
 	if ((result=setup_signal_handlers()) != 0)
-	{
+	{   // 设置各种信号处理方法
 		logCrit("exit abnormally!\n");
 		log_destroy();
 		return result;
@@ -298,19 +298,19 @@ int main(int argc, char *argv[])
 	}
 
     if ((result=sf_startup_schedule(&schedule_tid)) != 0)
-    {
+    {   // 周期任务运行时创建
         log_destroy();
         return result;
     }
 
     if ((result=setup_schedule_tasks()) != 0)
-    {
+    {   // 设置周期任务 tracker_mem_check_alive和tracker_write_status_to_file
         log_destroy();
         return result;
     }
 
 	if ((result=tracker_relationship_init()) != 0)
-	{
+	{   // 创建线程循环任务：relationship_thread_entrance，选取leader等操作
 		logCrit("exit abnormally!\n");
 		log_destroy();
 		return result;
@@ -320,9 +320,9 @@ int main(int argc, char *argv[])
 
 	bTerminateFlag = false;
 	bAcceptEndFlag = false;
-
+    // 接收socket请求循环
     sf_accept_loop();
-
+    // 此处一下都是销毁资源等操作
 	bAcceptEndFlag = true;
 	if (g_schedule_flag)
 	{

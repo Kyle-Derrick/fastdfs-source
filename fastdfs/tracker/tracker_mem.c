@@ -1634,7 +1634,7 @@ static int tracker_load_data(FDFSGroups *pGroups)
 	{
 	if ((result=tracker_locate_group_trunk_servers(pGroups, \
 		pTrunkServers, nTrunkServerCount, true)) != 0)
-	{
+	{   // 获取trunk server并设置 todo 暂未细看
 		return result;
 	}
 	}
@@ -2308,7 +2308,7 @@ static int tracker_mem_init_groups(FDFSGroups *pGroups)
 		sizeof(FDFSGroupInfo *) * pGroups->alloc_size);
 
 	if ((result=tracker_load_data(pGroups)) != 0)
-	{
+	{   // 具体注释看方法实现内部
 		return result;
 	}
 
@@ -2334,7 +2334,7 @@ int tracker_mem_init()
 		return result;
 	}
 
-	return tracker_mem_init_groups(&g_groups);
+	return tracker_mem_init_groups(&g_groups);  // 详情看方法实现
 }
 
 static void tracker_free_last_sync_timestamps(int **last_sync_timestamps, \

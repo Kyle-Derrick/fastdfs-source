@@ -67,7 +67,7 @@ static void task_finish_clean_up(struct fast_task_info *pTask)
 
 static int sock_accept_done_callback(struct fast_task_info *task,
         const in_addr_64_t client_addr, const bool bInnerPort)
-{
+{   // 检查是否配置允许ip，且是否包含在允许IP内
     if (g_allow_ip_count >= 0)
     {
         if (bsearch(&client_addr, g_allow_ip_addrs,
@@ -89,7 +89,7 @@ int tracker_service_init()
     int result;
 
     if ((result=init_pthread_lock(&lb_thread_lock)) != 0)
-    {
+    {   // 目前看来，这个锁只有此处和tracker_find_max_free_space_group会用到
         return result;
     }
 
@@ -97,8 +97,8 @@ int tracker_service_init()
             sock_accept_done_callback, fdfs_set_body_length, NULL,
             tracker_deal_task, task_finish_clean_up, NULL, 1000,
             sizeof(TrackerHeader), sizeof(TrackerClientInfo));
-    sf_enable_thread_notify(false);
-    sf_set_remove_from_ready_list(false);
+    sf_enable_thread_notify(false); // 禁用sf线程得通知
+    sf_set_remove_from_ready_list(false);   // 设置 sf_context->remove_from_ready_list
     return result;
 }
 

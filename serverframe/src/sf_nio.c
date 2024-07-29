@@ -93,7 +93,7 @@ static inline void release_iovec_buffer(struct fast_task_info *task)
 }
 
 void sf_task_finish_clean_up(struct fast_task_info *task)
-{
+{   // 调用完成回调，加入到释放队列
     /*
     assert(task->event.fd >= 0);
     if (task->event.fd < 0) {
